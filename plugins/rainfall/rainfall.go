@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/kyokomi/slackbot/plugins"
@@ -58,20 +59,18 @@ func checkReplyMessage(botID string, message string) (bool, string) {
 func getWeather(message string) (weather Weather, err error) {
 	group := messageFormat.FindStringSubmatch(message)[1:]
 
-	var latitude float32
-	_, err = fmt.Sscan(group[0], &latitude)
+	latitude, err := strconv.ParseFloat(group[0], 32)
 	if err != nil {
 		return
 	}
-	var longitude float32
-	_, err = fmt.Sscan(group[1], &longitude)
+	longitude, err := strconv.ParseFloat(group[1], 32)
 	if err != nil {
 		return
 	}
 
 	yw := NewYahooWeather(appID)
 
-	yfd, err := yw.Place(latitude, longitude)
+	ydf, err := yw.Place(float32(latitude), float32(longitude))
 	if err != nil {
 		return
 	}
