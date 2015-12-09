@@ -56,7 +56,7 @@ func checkReplyMessage(botID string, message string) (bool, string) {
 	return strings.Index(message, keyword) >= 0, message
 }
 
-func getWeather(message string) (weather Weather, err error) {
+func getWeather(message string) (weather *Weather, err error) {
 	group := messageFormat.FindStringSubmatch(message)[1:]
 
 	latitude, err := strconv.ParseFloat(group[0], 32)
@@ -75,16 +75,26 @@ func getWeather(message string) (weather Weather, err error) {
 		return
 	}
 
-	err = fmt.Errorf("Error")
-	for _, w := range yfd.Feature[0].Property.WeatherList.Weather {
-		if w.Type == "observation" {
-			weather = w
-			err = nil
-			break
-		}
+	weather, ok := findOvservationWeather(ydf)
+	if !ok {
+		err = fmt.Errorf("Error")
 	}
 
 	return
+}
+
+func findOvservationWeather(ydf *YDF) (*Weather, bool) {
+	if len(ydf.Feature) == 0 {
+		return nil, false
+	}
+
+	for _, w := range ydf.Feature[0].Property.WeatherList.Weather {
+		if w.Type == "observation" {
+			return &w, true
+		}
+	}
+
+	return nil, false
 }
 
 var _ plugins.BotMessagePlugin = (*plugin)(nil)
