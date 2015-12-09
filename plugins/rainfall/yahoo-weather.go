@@ -60,11 +60,29 @@ func NewYahooWeather(appID string) *yahooWeather {
 	}
 }
 
-const yahooAPIUrl = "http://weather.olp.yahooapis.jp/v1/place"
+const (
+	yahooAPIPlaceUrl         = "http://weather.olp.yahooapis.jp/v1/place"
+	yahooAPISearchZipCodeUrl = "http://search.olp.yahooapis.jp/OpenLocalPlatform/V1/zipCodeSearch"
+)
 
 func (y *yahooWeather) Place(latitude float32, longitude float32) (*YDF, error) {
+	query := map[string]string{
+		"coordinates": fmt.Sprintf("%f,%f", latitude, longitude),
+	}
 
-	res, err := http.Get(makeUrl(y.appID, latitude, longitude))
+	return y.apiGet(y.makeUrl(yahooAPIPlaceUrl, query))
+}
+
+func (y *yahooWeather) SearchZipCode(zipCode string) (*YDF, error) {
+	query := map[string]string{
+		"query": zipCode,
+	}
+
+	return y.apiGet(y.makeUrl(yahooAPISearchZipCodeUrl, query))
+}
+
+func (y *yahooWeather) apiGet(url string) (*YDF, error) {
+	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -80,16 +98,19 @@ func (y *yahooWeather) Place(latitude float32, longitude float32) (*YDF, error) 
 	return ydf, nil
 }
 
-func makeUrl(appID string, latitude float32, longitude float32) string {
-	u, err := url.Parse(yahooAPIUrl)
+func (y *yahooWeather) makeUrl(baseUrl string, query map[string]string) string {
+	u, err := url.Parse(baseUrl)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	q := u.Query()
-	q.Add("coordinates", fmt.Sprintf("%f,%f", latitude, longitude))
+
+	for key, value := range query {
+		q.Add(key, value)
+	}
 	q.Add("output", "json")
-	q.Add("appid", appID)
+	q.Add("appid", y.appID)
 	u.RawQuery = q.Encode()
 
 	return u.String()
