@@ -6,6 +6,16 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
+)
+
+type WeatherType string
+
+var timeZone = time.FixedZone("Asia/Tokyo", 9*60*60)
+
+const (
+	Observation WeatherType = "observation"
+	Forecast    WeatherType = "forecast"
 )
 
 type YDF struct {
@@ -50,6 +60,37 @@ type Weather struct {
 	Rainfall float32
 }
 
+func (w *Weather) IsObservation() bool {
+	return w.Type == "observation"
+}
+
+func (w *Weather) IsForecast() bool {
+	return w.Type == "forecast"
+}
+
+func (w *Weather) Time() time.Time {
+	var year, month, day, hour, min int
+
+	fmt.Println(w.Date)
+	_, err := fmt.Sscanf(w.Date, "%4d%2d%2d%2d%2d", &year, &month, &day, &hour, &min)
+	if err != nil {
+		fmt.Println(err)
+		return time.Time{}
+	}
+
+	return time.Date(year, time.Month(month), day, hour, min, 0, 0, timeZone)
+}
+
+func (w *Weather) String() string {
+	str := fmt.Sprintf("[%s]  %.2f mm", w.Time().Format("2006-01-02 15:04"), w.Rainfall)
+	if w.IsObservation() {
+		return str + "  (実測値)"
+	} else if w.IsForecast() {
+		return str + "  (予測値)"
+	}
+	return str
+}
+
 type yahooWeather struct {
 	appID string
 }
@@ -68,6 +109,7 @@ const (
 func (y *yahooWeather) Place(latitude float32, longitude float32) (*YDF, error) {
 	query := map[string]string{
 		"coordinates": fmt.Sprintf("%f,%f", latitude, longitude),
+		"interval":    "5",
 	}
 
 	return y.apiGet(y.makeUrl(yahooAPIPlaceUrl, query))

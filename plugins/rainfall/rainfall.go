@@ -31,14 +31,27 @@ func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, str
 }
 
 func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
-	w, err := getWeather(message)
+	weathers, err := getWeathers(message)
 	if err != nil {
-		event.Reply("取得失敗")
-	} else if w.Rainfall > 0 {
-		event.Reply(fmt.Sprintf("雨降ってます (%f mm)", w.Rainfall))
-	} else {
-		event.Reply("雨降ってないです")
+		event.Reply(fmt.Sprintf("取得失敗 : %v", err))
 	}
+
+	messages := make([]string, 0, 10)
+	w, ok := getObservationWeather(weathers)
+
+	if !ok {
+		messages = append(messages, "実測値が取得できません")
+	} else if w.Rainfall > 0 {
+		messages = append(messages, "雨降ってます")
+	} else {
+		messages = append(messages, "雨降ってないです")
+	}
+
+	for _, w := range weathers {
+		messages = append(messages, w.String())
+	}
+
+	event.Reply(strings.Join(messages, "\n"))
 
 	return true
 }
@@ -51,12 +64,7 @@ func (p *plugin) Help() string {
     `
 }
 
-func checkReplyMessage(botID string, message string) (bool, string) {
-	keyword := fmt.Sprintf("<@%s>", botID)
-	return strings.Index(message, keyword) >= 0, message
-}
-
-func getWeather(message string) (weather *Weather, err error) {
+func getWeathers(message string) (weathers []Weather, err error) {
 	group := messageFormat.FindStringSubmatch(message)[1:]
 
 	latitude, err := strconv.ParseFloat(group[0], 32)
@@ -75,26 +83,29 @@ func getWeather(message string) (weather *Weather, err error) {
 		return
 	}
 
-	weather, ok := findOvservationWeather(ydf)
-	if !ok {
-		err = fmt.Errorf("Error")
+	if len(ydf.Feature) == 0 {
+		err = fmt.Errorf("Could not get the weather data from the API response.")
+		return
+	}
+
+	weathers = ydf.Feature[0].Property.WeatherList.Weather
+	if len(weathers) == 0 {
+		err = fmt.Errorf("Could not get the weather data from the API response.")
+		return
 	}
 
 	return
 }
 
-func findOvservationWeather(ydf *YDF) (*Weather, bool) {
-	if len(ydf.Feature) == 0 {
-		return nil, false
-	}
-
-	for _, w := range ydf.Feature[0].Property.WeatherList.Weather {
-		if w.Type == "observation" {
-			return &w, true
+func getObservationWeather(weathers []Weather) (w Weather, ok bool) {
+	for _, w = range weathers {
+		if w.IsObservation() {
+			ok = true
+			return
 		}
 	}
 
-	return nil, false
+	return
 }
 
 var _ plugins.BotMessagePlugin = (*plugin)(nil)
