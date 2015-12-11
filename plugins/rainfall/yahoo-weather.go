@@ -11,8 +11,6 @@ import (
 
 type WeatherType string
 
-var timeZone = time.FixedZone("Asia/Tokyo", 9*60*60)
-
 const (
 	Observation WeatherType = "observation"
 	Forecast    WeatherType = "forecast"
@@ -78,7 +76,7 @@ func (w *Weather) Time() time.Time {
 		return time.Time{}
 	}
 
-	return time.Date(year, time.Month(month), day, hour, min, 0, 0, timeZone)
+	return time.Date(year, time.Month(month), day, hour, min, 0, 0, time.Local)
 }
 
 func (w *Weather) String() string {
