@@ -66,6 +66,10 @@ func (w *Weather) IsForecast() bool {
 	return w.Type == "forecast"
 }
 
+func (w *Weather) IsRaining() bool {
+	return w.Rainfall > 0
+}
+
 func (w *Weather) Time() time.Time {
 	var year, month, day, hour, min int
 

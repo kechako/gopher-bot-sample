@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kyokomi/slackbot/plugins"
 )
@@ -37,15 +38,25 @@ func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
 	}
 
 	messages := make([]string, 0, 10)
-	w, ok := getObservationWeather(weathers)
 
-	if !ok {
-		messages = append(messages, "実測値が取得できません")
-	} else if w.Rainfall > 0 {
-		messages = append(messages, "雨降ってます")
+	// 直近の天気情報
+	w := getMostRecentWeather(weathers)
+
+	var result string
+	if w.IsRaining() {
+		if w.IsObservation() {
+			result = "雨降ってます"
+		} else {
+			result = "雨降ってるかも"
+		}
 	} else {
-		messages = append(messages, "雨降ってないです")
+		if w.IsObservation() {
+			result = "雨降ってないです"
+		} else {
+			result = "雨降ってないかも"
+		}
 	}
+	messages = append(messages, result+"  "+w.String())
 
 	for _, w := range weathers {
 		messages = append(messages, w.String())
@@ -97,15 +108,27 @@ func getWeathers(message string) (weathers []Weather, err error) {
 	return
 }
 
-func getObservationWeather(weathers []Weather) (w Weather, ok bool) {
-	for _, w = range weathers {
-		if w.IsObservation() {
-			ok = true
-			return
+func getMostRecentWeather(weathers []Weather) (weather Weather) {
+	now := time.Now()
+
+	var minDuration int64
+	for i, w := range weathers {
+		d := Abs64(int64(now.Sub(w.Time())))
+		if i == 0 || d < minDuration {
+			minDuration = d
+			weather = w
 		}
 	}
 
 	return
+}
+
+func Abs64(n int64) int64 {
+	if n < 0 {
+		return -n
+	}
+
+	return n
 }
 
 var _ plugins.BotMessagePlugin = (*plugin)(nil)
