@@ -84,7 +84,7 @@ func (w *Weather) Time() time.Time {
 }
 
 func (w *Weather) String() string {
-	str := fmt.Sprintf("[%s]  %.2f mm", w.Time().Format("2006-01-02 15:04"), w.Rainfall)
+	str := fmt.Sprintf("[%s]  %.2f mm", w.Time().Format("15:04"), w.Rainfall)
 	if w.IsObservation() {
 		return str + "  (実測値)"
 	} else if w.IsForecast() {
