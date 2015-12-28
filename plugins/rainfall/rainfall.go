@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kechako/yolp"
 	"github.com/kyokomi/slackbot/plugins"
 )
 
@@ -56,10 +57,10 @@ func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
 			result = "雨降ってないかも"
 		}
 	}
-	messages = append(messages, result+"  "+w.String())
+	messages = append(messages, result+"  "+GetWeatherString(w))
 
 	for _, w := range weathers {
-		messages = append(messages, w.String())
+		messages = append(messages, GetWeatherString(w))
 	}
 
 	event.Reply(strings.Join(messages, "\n"))
@@ -75,7 +76,7 @@ func (p *plugin) Help() string {
     `
 }
 
-func getWeathers(message string) (weathers []Weather, err error) {
+func getWeathers(message string) (weathers []yolp.Weather, err error) {
 	group := messageFormat.FindStringSubmatch(message)[1:]
 
 	latitude, err := strconv.ParseFloat(group[0], 32)
@@ -87,9 +88,9 @@ func getWeathers(message string) (weathers []Weather, err error) {
 		return
 	}
 
-	yw := NewYahooWeather(appID)
+	y := yolp.NewYOLP(appID)
 
-	ydf, err := yw.Place(float32(latitude), float32(longitude))
+	ydf, err := y.Place(float32(latitude), float32(longitude))
 	if err != nil {
 		return
 	}
@@ -108,7 +109,7 @@ func getWeathers(message string) (weathers []Weather, err error) {
 	return
 }
 
-func getMostRecentWeather(weathers []Weather) (weather Weather) {
+func getMostRecentWeather(weathers []yolp.Weather) (weather yolp.Weather) {
 	now := time.Now()
 
 	var minDuration int64
@@ -129,6 +130,16 @@ func Abs64(n int64) int64 {
 	}
 
 	return n
+}
+
+func GetWeatherString(w yolp.Weather) string {
+	str := fmt.Sprintf("[%s]  %.2f mm", w.Time().Format("15:04"), w.Rainfall)
+	if w.IsObservation() {
+		return str + "  (実測値)"
+	} else if w.IsForecast() {
+		return str + "  (予測値)"
+	}
+	return str
 }
 
 var _ plugins.BotMessagePlugin = (*plugin)(nil)
