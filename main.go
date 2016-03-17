@@ -7,6 +7,7 @@ import (
 
 	"github.com/kechako/gopher-bot/plugins/iyagoza"
 	"github.com/kechako/gopher-bot/plugins/rainfall"
+	"github.com/kechako/gopher-bot/plugins/zundoko"
 	"github.com/kyokomi/slackbot"
 	"github.com/kyokomi/slackbot/plugins/akari"
 	"github.com/kyokomi/slackbot/plugins/lgtm"
@@ -28,6 +29,8 @@ func main() {
 	bot.AddPlugin("iyagoza", iyagoza.NewPlugin())
 	// 雨
 	bot.AddPlugin("rainfall", rainfall.NewPlugin(appId))
+	// ズンドコキヨシ
+	bot.AddPlugin("zundoko", zundoko.NewPlugin())
 	// あかり大好き
 	bot.AddPlugin("akari", akari.NewPlugin())
 	// LGTM
