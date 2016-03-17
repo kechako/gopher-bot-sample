@@ -27,13 +27,7 @@ func NewPlugin() plugins.BotMessagePlugin {
 }
 
 func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, string) {
-	for _, k := range keywords {
-		if message == k {
-			return true, message
-		}
-	}
-
-	return false, message
+	return plugins.CheckMessageKeywords(message, keywords...)
 }
 
 func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
