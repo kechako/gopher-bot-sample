@@ -2,7 +2,6 @@ package rainfall
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,18 +13,16 @@ import (
 
 var (
 	messageFormat = regexp.MustCompile(`^rainfall\s([+-]?\d+\.\d+)\s+([+-]?\d+\.\d+)`)
-	appID         string
 )
 
-func init() {
-	appID = os.Getenv("YAHOO_APP_ID")
-}
-
 type plugin struct {
+	appID string
 }
 
-func NewPlugin() plugins.BotMessagePlugin {
-	return &plugin{}
+func NewPlugin(appID string) plugins.BotMessagePlugin {
+	return &plugin{
+		appID: appID,
+	}
 }
 
 func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, string) {
@@ -33,7 +30,7 @@ func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, str
 }
 
 func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
-	weathers, err := getWeathers(message)
+	weathers, err := p.getWeathers(message)
 	if err != nil {
 		event.Reply(fmt.Sprintf("取得失敗 : %v", err))
 	}
@@ -76,7 +73,7 @@ func (p *plugin) Help() string {
     `
 }
 
-func getWeathers(message string) (weathers []yolp.Weather, err error) {
+func (p *plugin) getWeathers(message string) (weathers []yolp.Weather, err error) {
 	group := messageFormat.FindStringSubmatch(message)[1:]
 
 	latitude, err := strconv.ParseFloat(group[0], 32)
@@ -88,7 +85,7 @@ func getWeathers(message string) (weathers []yolp.Weather, err error) {
 		return
 	}
 
-	y := yolp.NewYOLP(appID)
+	y := yolp.NewYOLP(p.appID)
 
 	ydf, err := y.Place(float32(latitude), float32(longitude))
 	if err != nil {
