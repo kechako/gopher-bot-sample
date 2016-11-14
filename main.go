@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -16,9 +17,10 @@ import (
 )
 
 func main() {
-	var token, appId string
+	var token, appId, rainfallPath string
 	flag.StringVar(&token, "token", os.Getenv("SLACK_BOT_TOKEN"), "Bot token.")
 	flag.StringVar(&appId, "appid", os.Getenv("YAHOO_APP_ID"), "Yahoo App Id.")
+	flag.StringVar(&rainfallPath, "rainfall-path", os.Getenv("RAINFALL_PATH"), "Rainfall plugin data store path.")
 	flag.Parse()
 
 	bot, err := slackbot.NewBotContext(token)
@@ -28,7 +30,13 @@ func main() {
 	// いやでござる
 	bot.AddPlugin("iyagoza", iyagoza.NewPlugin())
 	// 雨
-	bot.AddPlugin("rainfall", rainfall.NewPlugin(appId))
+	r, err := rainfall.NewPlugin(appId, rainfallPath)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	defer r.Close()
+	bot.AddPlugin("rainfall", r)
 	// ズンドコキヨシ
 	bot.AddPlugin("zundoko", zundoko.NewPlugin())
 	// あかり大好き
