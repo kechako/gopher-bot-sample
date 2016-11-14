@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kechako/gopher-bot/plugins/iyagoza"
 	"github.com/kechako/gopher-bot/plugins/rainfall"
@@ -50,8 +51,8 @@ func main() {
 
 	bot.WebSocketRTM()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
-	})
-	http.ListenAndServe(":8000", nil)
+	sigCh := make(chan os.Signal)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+
+	<-sigCh
 }
