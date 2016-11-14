@@ -11,6 +11,7 @@ const (
 	CommandTypeAddLocation    CommandType = "add"
 	CommandTypeRemoveLocation CommandType = "rm"
 	CommandTypeChangeLocation CommandType = "change"
+	CommandTypeListLocation   CommandType = "list"
 	CommandTypeNone           CommandType = "none"
 )
 
@@ -46,6 +47,9 @@ func (p *plugin) ExecuteCommand(message string) (string, error) {
 		params = params[1:]
 	case CommandTypeChangeLocation:
 		commander = NewChangeCommand(p)
+		params = params[1:]
+	case CommandTypeListLocation:
+		commander = NewListCommand(p)
 		params = params[1:]
 	default:
 		commander = NewAskCommand(p)

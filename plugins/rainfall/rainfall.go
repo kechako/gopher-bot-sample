@@ -86,6 +86,9 @@ func (p *plugin) Help() string {
 
 	rainfall rm <name>
 	    指定された名前の座標を削除します。
+
+	rainfall list
+	    登録された座標を一覧表示します。
     `
 }
 
