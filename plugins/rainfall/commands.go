@@ -42,6 +42,8 @@ func (p *plugin) ExecuteCommand(message string) (string, error) {
 		commander = NewAddCommand(p)
 		params = params[1:]
 	case CommandTypeRemoveLocation:
+		commander = NewRemoveCommand(p)
+		params = params[1:]
 	case CommandTypeChangeLocation:
 	default:
 		commander = NewAskCommand(p)
