@@ -70,15 +70,7 @@ func (s *LocationStore) Save() error {
 
 	e := json.NewEncoder(file)
 
-	locations := make([]Location, 0, len(s.locMap))
-
-	for _, loc := range s.locMap {
-		locations = append(locations, loc)
-	}
-
-	sort.Sort(LocationSorter(locations))
-
-	err = e.Encode(locations)
+	err = e.Encode(s.Locations())
 
 	return err
 }
@@ -94,4 +86,16 @@ func (s *LocationStore) Set(loc Location) {
 
 func (s *LocationStore) Del(name string) {
 	delete(s.locMap, name)
+}
+
+func (s *LocationStore) Locations() []Location {
+	locations := make([]Location, 0, len(s.locMap))
+
+	for _, loc := range s.locMap {
+		locations = append(locations, loc)
+	}
+
+	sort.Sort(LocationSorter(locations))
+
+	return locations
 }
