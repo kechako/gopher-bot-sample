@@ -69,6 +69,19 @@ func (p *plugin) Help() string {
 	指定された座標で雨が降っているかどうか表示します。
 
 	rainfall <latitude> <longitude>
+	    指定された座標で雨が降っているかどうか表示します。
+
+	rainfall <name>
+	    指定された名前の座標で雨が降っているかどうか表示します。
+
+	rainfall add <name> <latitude> <longitude>
+	    指定された名前で座標を登録します。
+
+	rainfall change <name> <latitude> <longitude>
+	    指定された名前の座標を変更します。
+
+	rainfall rm <name>
+	    指定された名前の座標を削除します。
     `
 }
 
