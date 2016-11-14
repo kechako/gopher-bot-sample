@@ -45,6 +45,10 @@ func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, str
 		return false, message
 	}
 
+	if len(cmds) == 1 {
+		return true, ""
+	}
+
 	return true, cmds[1]
 }
 
