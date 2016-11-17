@@ -16,6 +16,7 @@ func NewChangeCommand(p *plugin) Commander {
 }
 
 func (c *changeCommand) Execute(params []string) (string, error) {
+	params = params[1:]
 	loc, err := c.makeLocation(params)
 	if err != nil {
 		return "", err

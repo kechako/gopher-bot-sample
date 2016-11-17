@@ -16,6 +16,7 @@ func NewListCommand(p *plugin) Commander {
 }
 
 func (c *listCommand) Execute(params []string) (string, error) {
+	params = params[1:]
 	if len(params) != 0 {
 		return "", CommandSyntaxError
 	}

@@ -13,6 +13,7 @@ func NewRemoveCommand(p *plugin) Commander {
 }
 
 func (c *removeCommand) Execute(params []string) (string, error) {
+	params = params[1:]
 	if len(params) != 1 {
 		return "", CommandSyntaxError
 	}

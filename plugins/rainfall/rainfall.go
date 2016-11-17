@@ -15,6 +15,7 @@ const (
 type plugin struct {
 	appID    string
 	locStore *LocationStore
+	cmd      *Command
 }
 
 type BotMessagePluginCloser interface {
@@ -29,10 +30,14 @@ func NewPlugin(appID string, path string) (BotMessagePluginCloser, error) {
 		return nil, err
 	}
 
-	return &plugin{
+	p := &plugin{
 		appID:    appID,
 		locStore: locStore,
-	}, nil
+	}
+
+	p.cmd = NewCommand(p)
+
+	return p, nil
 }
 
 func (p *plugin) Close() error {
@@ -53,7 +58,7 @@ func (p *plugin) CheckMessage(event plugins.BotEvent, message string) (bool, str
 }
 
 func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
-	result, err := p.ExecuteCommand(message)
+	result, err := p.cmd.Execute(message)
 	if err != nil {
 		if err == CommandSyntaxError {
 			event.Reply(p.buildHelp())

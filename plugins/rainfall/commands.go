@@ -23,7 +23,27 @@ type Commander interface {
 	Execute(params []string) (string, error)
 }
 
-func (p *plugin) ExecuteCommand(message string) (string, error) {
+type Command struct {
+	p            *plugin
+	commanderMap map[CommandType]Commander
+}
+
+func NewCommand(p *plugin) *Command {
+	commanderMap := map[CommandType]Commander{
+		CommandTypeAddLocation:    NewAddCommand(p),
+		CommandTypeRemoveLocation: NewRemoveCommand(p),
+		CommandTypeChangeLocation: NewChangeCommand(p),
+		CommandTypeListLocation:   NewListCommand(p),
+		CommandTypeNone:           NewAskCommand(p),
+	}
+
+	return &Command{
+		p:            p,
+		commanderMap: commanderMap,
+	}
+}
+
+func (c *Command) Execute(message string) (string, error) {
 	params := make([]string, 0, 4)
 	for _, param := range strings.Split(message, " ") {
 		if param == "" {
@@ -37,22 +57,10 @@ func (p *plugin) ExecuteCommand(message string) (string, error) {
 		cmdType = CommandType(params[0])
 	}
 
-	var commander Commander
-	switch cmdType {
-	case CommandTypeAddLocation:
-		commander = NewAddCommand(p)
-		params = params[1:]
-	case CommandTypeRemoveLocation:
-		commander = NewRemoveCommand(p)
-		params = params[1:]
-	case CommandTypeChangeLocation:
-		commander = NewChangeCommand(p)
-		params = params[1:]
-	case CommandTypeListLocation:
-		commander = NewListCommand(p)
-		params = params[1:]
-	default:
-		commander = NewAskCommand(p)
+	commander, ok := c.commanderMap[cmdType]
+	if !ok {
+		cmdType = CommandTypeNone
+		commander = c.commanderMap[cmdType]
 	}
 
 	return commander.Execute(params)
