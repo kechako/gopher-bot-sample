@@ -55,7 +55,7 @@ func (p *plugin) DoAction(event plugins.BotEvent, message string) bool {
 
 func (p *plugin) Help() string {
 	return `PPAP:
-	` + "\u2712\ufe0f\U0001f34d\U0001F34E" + `
+	` + "\u2712\ufe0f\U0001f34d\U0001F34E\u2712\ufe0f" + `
     `
 }
 
