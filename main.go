@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/kechako/gopher-bot/plugins/iyagoza"
+	"github.com/kechako/gopher-bot/plugins/ppap"
 	"github.com/kechako/gopher-bot/plugins/rainfall"
 	"github.com/kechako/gopher-bot/plugins/zundoko"
 	"github.com/kyokomi/slackbot"
@@ -40,6 +41,8 @@ func main() {
 	bot.AddPlugin("rainfall", r)
 	// ズンドコキヨシ
 	bot.AddPlugin("zundoko", zundoko.NewPlugin())
+	// PPAP
+	bot.AddPlugin("ppap", ppap.NewPlugin())
 	// あかり大好き
 	bot.AddPlugin("akari", akari.NewPlugin())
 	// LGTM
